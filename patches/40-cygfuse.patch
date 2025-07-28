@@ -1,0 +1,11 @@
+diff --git a/source/v3/fuse3/Makefile b/source/v3/fuse3/Makefile
+index c1e62cb..d0f9117 100644
+--- a/source/v3/fuse3/Makefile
++++ b/source/v3/fuse3/Makefile
+@@ -1,5 +1,5 @@
+ VERSION=3.2
+-CFLAGS=-g -Wall
++CFLAGS+=-g -Wall -O2
+ 
+ .PHONY: all test
+ all: cygfuse-$(VERSION).dll fuse3.pc

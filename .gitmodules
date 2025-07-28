@@ -1,3 +1,6 @@
 [submodule "sshfs"]
 	path = sshfs
 	url = https://github.com/libfuse/sshfs.git
+[submodule "cygfuse"]
+	path = cygfuse
+	url = https://github.com/mgeisert/cygfuse.git
