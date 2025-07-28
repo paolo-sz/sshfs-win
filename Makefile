@@ -24,6 +24,16 @@ BinExtra= ssh #bash ls mount
 
 export PATH := $(shell cygpath -au "$$WIX")/bin:$(PATH)
 
+FUSE3=$(shell realpath -m $(SrcDir)/cygfuse/source/v3/fuse3)
+
+#this is a damn hack... msys gcc seems to go crazy under meson
+export GCC_EXEC_PREFIX=/usr/lib/gcc/$(shell gcc --print-search-dirs | grep install | awk '{print $$2}')
+export CFLAGS+= -I$(GCC_EXEC_PREFIX)include/ -I$(FUSE3) -L$(FUSE3)
+
+# this add fuse stuff
+export CFLAGS+= -I$(FUSE3) -L$(FUSE3)
+export CC=gcc
+
 goal: $(Status) $(Status)/done
 
 $(Status):
@@ -34,7 +44,7 @@ $(Status)/done: $(Status)/dist
 
 $(Status)/dist: $(Status)/wix
 	mkdir -p $(DistDir)
-	cp $(shell cygpath -aw $(WixDir)/sshfs-win-$(MyVersion)-$(MyArch).msi) $(DistDir)
+	cp $(shell cygpath -aw $(WixDir)/sshfs-win-$(MyVersion)-$(MyArch).exe) $(DistDir)
 	tools/signtool sign \
 		/ac tools/$(CrossCert) \
 		/i $(CertIssuer) \
@@ -42,14 +52,13 @@ $(Status)/dist: $(Status)/wix
 		/d $(MyDescription) \
 		/fd sha1 \
 		/t http://timestamp.digicert.com \
-		'$(shell cygpath -aw $(DistDir)/sshfs-win-$(MyVersion)-$(MyArch).msi)' || \
+		'$(shell cygpath -aw $(DistDir)/sshfs-win-$(MyVersion)-$(MyArch).exe)' || \
 		echo "SIGNING FAILED! The product has been successfully built, but not signed." 1>&2
 	touch $(Status)/dist
 
-$(Status)/wix: $(Status)/sshfs-win sshfs-win.wxs
+$(Status)/wix: $(Status)/sshfs-win sshfs-win.nsi
 	mkdir -p $(WixDir)
-	cp sshfs-win.wxs $(WixDir)/
-	candle -nologo -arch $(MyArch) -pedantic\
+	makensis\
 		-dMyProductName=$(MyProductName)\
 		-dMyCompanyName=$(MyCompanyName)\
 		-dMyDescription=$(MyDescription)\
@@ -57,36 +66,19 @@ $(Status)/wix: $(Status)/sshfs-win sshfs-win.wxs
 		-dMyProductStage=$(MyProductStage)\
 		-dMyVersion=$(MyVersion)\
 		-dMyArch=$(MyArch)\
-		-o "$(shell cygpath -aw $(WixDir)/sshfs-win.wixobj)"\
-		"$(shell cygpath -aw $(WixDir)/sshfs-win.wxs)"
-	heat dir $(shell cygpath -aw $(RootDir))\
-		-nologo -dr INSTALLDIR -cg C.Main -srd -ke -sreg -gg -sfrag\
-		-o $(shell cygpath -aw $(WixDir)/root.wxs)
-	candle -nologo -arch $(MyArch) -pedantic\
-		-dMyProductName=$(MyProductName)\
-		-dMyCompanyName=$(MyCompanyName)\
-		-dMyDescription=$(MyDescription)\
-		-dMyProductVersion=$(MyProductVersion)\
-		-dMyProductStage=$(MyProductStage)\
-		-dMyVersion=$(MyVersion)\
-		-dMyArch=$(MyArch)\
-		-o "$(shell cygpath -aw $(WixDir)/root.wixobj)"\
-		"$(shell cygpath -aw $(WixDir)/root.wxs)"
-	light -nologo\
-		-o $(shell cygpath -aw $(WixDir)/sshfs-win-$(MyVersion)-$(MyArch).msi)\
-		-ext WixUIExtension\
-		-b $(RootDir)\
-		$(shell cygpath -aw $(WixDir)/root.wixobj)\
-		$(shell cygpath -aw $(WixDir)/sshfs-win.wixobj)
+		-DMySrcDir=$(RootDir)\
+		-DMyOutFile=$(shell cygpath -am $(WixDir)/sshfs-win-$(MyVersion)-$(MyArch).exe)\
+    sshfs-win.nsi
 	touch $(Status)/wix
 
 $(Status)/sshfs-win: $(Status)/root sshfs-win.c
-	gcc -o $(RootDir)/bin/sshfs-win sshfs-win.c
+	gcc -o $(RootDir)/bin/sshfs-win -O2 $(CFLAGS) sshfs-win.c
 	strip $(RootDir)/bin/sshfs-win
 	touch $(Status)/sshfs-win
 
 $(Status)/root: $(Status)/make
 	mkdir -p $(RootDir)/{bin,dev/{mqueue,shm},etc}
+	cp $(FUSE3)/*.dll $(RootDir)/bin
 	(cygcheck $(SrcDir)/sshfs/build/sshfs; for f in $(BinExtra); do cygcheck /usr/bin/$$f; done) |\
 		tr -d '\r' | tr '\\' / | xargs cygpath -au | grep '^/usr/bin/' | sort | uniq |\
 		while read f; do cp $$f $(RootDir)/bin; done
@@ -97,6 +89,7 @@ $(Status)/root: $(Status)/make
 	touch $(Status)/root
 
 $(Status)/make: $(Status)/config
+	cd $(FUSE3) && make
 	cd $(SrcDir)/sshfs/build && ninja
 	touch $(Status)/make
 
@@ -106,12 +99,14 @@ $(Status)/config: $(Status)/patch
 	touch $(Status)/config
 
 $(Status)/patch: $(Status)/clone
-	cd $(SrcDir)/sshfs && for f in $(PrjDir)/patches/*.patch; do patch --binary -p1 <$$f; done
+	cd $(SrcDir)/sshfs && for f in $(PrjDir)/patches/sshfs/*.patch; do patch --binary -p1 <$$f; done
+	cd $(SrcDir)/cygfuse && for f in $(PrjDir)/patches/cygfuse/*.patch; do patch --binary -p1 <$$f; done
 	touch $(Status)/patch
 
 $(Status)/clone:
 	mkdir -p $(SrcDir)
 	git clone $(PrjDir)/sshfs $(SrcDir)/sshfs
+	git clone $(PrjDir)/cygfuse $(SrcDir)/cygfuse
 	touch $(Status)/clone
 
 clean:

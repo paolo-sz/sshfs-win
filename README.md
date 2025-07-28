@@ -28,18 +28,12 @@
     </a>
 </p>
 
-SSHFS-Win is a minimal port of [SSHFS](https://github.com/libfuse/sshfs) to Windows. Under the hood it uses [Cygwin](https://cygwin.com) for the POSIX environment and [WinFsp](https://github.com/billziss-gh/winfsp) for the FUSE functionality.
+SSHFS-Win is a minimal port of [SSHFS](https://github.com/libfuse/sshfs) to Windows. Under the hood it uses [MSYS](https://www.msys2.org/) for the POSIX environment and [WinFsp](https://github.com/billziss-gh/winfsp) for the FUSE functionality.
 
 ## Installation
 
 - Install the latest version of [WinFsp](https://github.com/billziss-gh/winfsp/releases/latest).
-- Install the latest version of [SSHFS-Win](https://github.com/billziss-gh/sshfs-win/releases). Choose the x64 or x86 installer according to your computer's architecture.
-
-Both can also be easily installed with [WinGet](https://github.com/microsoft/winget-cli):
-
-```console
-winget install SSHFS-Win.SSHFS-Win
-```
+- build this version of [SSHFS-Win] and install it
 
 ## Basic Usage
 
@@ -118,6 +112,7 @@ The complete UNC syntax is as follows:
 ## GUI front ends
 
 There are currently 2 GUI front ends for SSHFS-Win: [SiriKali](https://mhogomchungu.github.io/sirikali/) and [SSHFS-Win-Manager](https://github.com/evsar3/sshfs-win-manager).
+BUT they are NOT guarantee to work with this version of SSHFS-Win.
 
 ### SiriKali
 
@@ -169,33 +164,32 @@ sshfs-win itself does not currently support ssh tunneling, but something similar
 
 It is possible to use the `sshfs-win.exe` and `sshfs.exe` programs directly for advanced usage scenarios. Both programs can be found in the `bin` subdirectory of the `SSHFS-Win` installation (usually `\Program Files\SSHFS-Win\bin`).
 
-The `sshfs-win.exe` program is useful to launch `sshfs.exe` from a `cmd.exe` prompt (`sshfs-win cmd`) or to launch `sshfs.exe` under the control of the [WinFsp Launcher](https://github.com/billziss-gh/winfsp/wiki/WinFsp-Service-Architecture) (`sshfs-win svc`). The `sshfs-win.exe` program **SHOULD NOT** be used from Cygwin. The `sshfs-win.exe` program has the following usage:
+The `sshfs-win.exe` program is useful to launch `sshfs.exe` from a `cmd.exe` prompt (`sshfs-win cmd`) or to launch `sshfs.exe` under the control of the [WinFsp Launcher](https://github.com/billziss-gh/winfsp/wiki/WinFsp-Service-Architecture) (`sshfs-win svc`). The `sshfs-win.exe` program **SHOULD NOT** be used from MSYS. The `sshfs-win.exe` program has the following usage:
 
 ```
 usage: sshfs-win cmd SSHFS_COMMAND_LINE
     SSHFS_COMMAND_LINE  command line to pass to sshfs
 
-usage: sshfs-win svc PREFIX X: [LOCUSER] [SSHFS_OPTIONS]
-    PREFIX              Windows UNC prefix (note single backslash)
+usage: sshfs-win svc PREFIX X: [-user [DOMAIN/]USERNAME] [-home HOME] [SSHFS_OPTIONS]
+    PREFIX              Windows UNC prefix (note single backslash). USE ONLY BACKSLASH!!
                         \sshfs[.SUFFIX]\[LOCUSER=]REMUSER@HOST[!PORT][\PATH]
+                        \sshfs[.SUFFIX]\alias[\PATH]
                         sshfs: remote user home dir
                         sshfs.r: remote root dir
                         sshfs.k: remote user home dir with key authentication
                         sshfs.kr: remote root dir with key authentication
-    LOCUSER             local user (DOMAIN+USERNAME)
+    LOCUSER             local user (DOMAIN+USERNAME) (literally a + character)
     REMUSER             remote user
     HOST                remote host
     PORT                remote port
     PATH                remote path (relative to remote home or root)
     X:                  mount drive
+    DOMAIN:             local user domain
+    USERNAME            local user name without domain
+    HOME:               local user home folder
     SSHFS_OPTIONS       additional options to pass to SSHFS
-```
 
-The `sshfs.exe` program can be used with an existing Cygwin installation, but it requires prior installation of FUSE for Cygwin on that Cygwin installation. FUSE for Cygwin is included with WinFsp and can be installed on a Cygwin installation by executing the command:
-
-```
-$ sh "$(cat /proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/WinFsp/InstallDir | tr -d '\0')"/opt/cygfuse/install.sh
-FUSE for Cygwin installed.
+    Search path for autentication keys are HOME/.ssh/id_rsa.REMUSER first and then HOME/.ssh/id_rsa
 ```
 
 ## Passing options to sshfs for mapped network drives
@@ -214,10 +208,15 @@ On a shared file server, the default permissions for new files created may be to
 
 Map network drive or "net use": Use the provided "GroupReadWrite.reg" registry patch.
 
+## Default options to sshfs through registry for mapped network drives
+
+-o ServerAliveInterval=30 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o idmap=user -o max_readahead=1GB -o large_read -o kernel_cache -o follow_symlinks -o create_dir_umask=007 -o create_file_umask=117 -o reconnect" 
+
 ## Project Organization
 
 This is a simple project:
 
+- `cygfuse` is a submodule pointing to the original cygfuse project.
 - `sshfs` is a submodule pointing to the original SSHFS project.
 - `sshfs-win.c` is a simple wrapper around the sshfs program that is used to implement the "Map Network Drive" functionality.
 - `sshfs-win.wxs` is a the Wix file that describes the SSHFS-Win installer.
@@ -226,31 +225,25 @@ This is a simple project:
 
 ## Building
 
-In order to build SSHFS-Win you will need Cygwin and the following Cygwin packages:
+In order to build SSHFS-Win you will need MSYS and the following MSYS packages:
 
-- gcc-core
+- gcc
 - git
-- libglib2.0-devel
+- glib2-devel
 - make
 - meson
 - patch
 
 You will also need:
 
-- FUSE for Cygwin. It is included with WinFsp and can be installed on a Cygwin installation by executing the command:
-
-    ```
-    $ sh "$(cat /proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/WinFsp/InstallDir | tr -d '\0')"/opt/cygfuse/install.sh
-    FUSE for Cygwin installed.
-    ```
-- [Wix toolset](http://wixtoolset.org). This is a native Windows package that is used to build the SSHFS-Win MSI installer.
+- [NSIS Windows installers generator](https://nsis.sourceforge.io/). This is a tool that is used to build the SSHFS-Win EXE installer.
 
 To build:
 
-- Open a Cygwin prompt.
+- Open a MSYS prompt.
 - Change directory to the sshfs-win repository.
 - Issue `make`.
-- The sshfs-win repository includes the upstream SSHFS project as a submodule; if you have not already done so, you must initialize it with `git submodule update --init sshfs`.
+- The sshfs-win repository includes the upstream SSHFS project as a submodule; if you have not already done so, you must initialize it with `git submodule update --init sshfs cygfuse`.
 
 ## License
 
@@ -258,6 +251,6 @@ SSHFS-Win uses the same license as SSHFS, which is GPLv2+. It interfaces with Wi
 
 It also packages the following components:
 
-- Cygwin: LGPLv3
+- MSYS: LGPLv3
 - GLib2: LGPLv2
 - SSH: "all components are under a BSD licence, or a licence more free than that"
