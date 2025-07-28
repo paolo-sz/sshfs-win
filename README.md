@@ -5,29 +5,6 @@
     SSHFS-Win &middot; SSHFS for Windows
 </h1>
 
-<p align="center">
-    <b>Download</b><br>
-    <a href="https://github.com/billziss-gh/sshfs-win/releases/latest">
-        <img src="https://img.shields.io/github/release/billziss-gh/sshfs-win.svg?label=stable&style=for-the-badge"/>
-    </a>
-    <a href="https://github.com/billziss-gh/sshfs-win/releases">
-        <img src="https://img.shields.io/github/release/billziss-gh/sshfs-win/all.svg?label=latest&colorB=e52e4b&style=for-the-badge"/>
-    </a>
-    <!-- a href="https://chocolatey.org/packages/sshfs">
-        <img src="https://img.shields.io/badge/choco-install%20sshfs-black.svg?style=for-the-badge"/>
-    </a -->
-</p>
-
-<p align="center">
-    <b>GUI Frontends</b><br>
-    <a href="https://github.com/mhogomchungu/sirikali/releases/latest">
-        <img src="https://img.shields.io/github/release/mhogomchungu/sirikali.svg?label=SiriKali&style=for-the-badge"/>
-    </a>
-    <a href="https://github.com/evsar3/sshfs-win-manager/releases/latest">
-        <img src="https://img.shields.io/github/release/evsar3/sshfs-win-manager.svg?label=SSHFS-Win-Manager&style=for-the-badge"/>
-    </a>
-</p>
-
 SSHFS-Win is a minimal port of [SSHFS](https://github.com/libfuse/sshfs) to Windows. Under the hood it uses [MSYS](https://www.msys2.org/) for the POSIX environment and [WinFsp](https://github.com/billziss-gh/winfsp) for the FUSE functionality.
 
 ## Installation
