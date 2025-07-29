@@ -1,0 +1,21 @@
+diff --git a/sshfs.c b/sshfs.c
+index 676fd58..396df72 100644
+--- a/sshfs.c
++++ b/sshfs.c
+@@ -1938,14 +1938,15 @@ static int start_processing_thread(struct conn *conn)
+ 	sigaddset(&newset, SIGHUP);
+ 	sigaddset(&newset, SIGQUIT);
+ 	pthread_sigmask(SIG_BLOCK, &newset, &oldset);
++	conn->processing_thread_started = 1;
+ 	err = pthread_create(&thread_id, NULL, process_requests, conn);
+ 	if (err) {
++  	conn->processing_thread_started = 0;
+ 		fprintf(stderr, "failed to create thread: %s\n", strerror(err));
+ 		return -EIO;
+ 	}
+ 	pthread_detach(thread_id);
+ 	pthread_sigmask(SIG_SETMASK, &oldset, NULL);
+-	conn->processing_thread_started = 1;
+ 	return 0;
+ }
+ 
