@@ -28,7 +28,7 @@ FUSE3=$(shell realpath -m $(SrcDir)/cygfuse/source/v3/fuse3)
 
 #this is a damn hack... msys gcc seems to go crazy under meson
 export GCC_EXEC_PREFIX=/usr/lib/gcc/$(shell gcc --print-search-dirs | grep install | awk '{print $$2}')
-export CFLAGS+= -I$(GCC_EXEC_PREFIX)include/ -I$(FUSE3) -L$(FUSE3)
+export CFLAGS+= -I$(GCC_EXEC_PREFIX)include/
 
 # this add fuse stuff
 export CFLAGS+= -I$(FUSE3) -L$(FUSE3)
