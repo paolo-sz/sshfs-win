@@ -5,12 +5,12 @@
     SSHFS-Win &middot; SSHFS for Windows
 </h1>
 
-SSHFS-Win is a minimal port of [SSHFS](https://github.com/libfuse/sshfs) to Windows. Under the hood it uses [MSYS](https://www.msys2.org/) for the POSIX environment and [WinFsp](https://github.com/billziss-gh/winfsp) for the FUSE functionality.
+SSHFS-Win is a minimal port of [SSHFS](https://github.com/libfuse/sshfs) to Windows. Under the hood it uses [MSYS2](https://www.msys2.org/) for the POSIX environment and [WinFsp](https://github.com/billziss-gh/winfsp) for the FUSE functionality.
 
 ## Installation
 
 - Install the latest version of [WinFsp](https://github.com/billziss-gh/winfsp/releases/latest).
-- build this version of [SSHFS-Win] and install it
+- build this version of SSHFS-Win and install it (installer is under .build/\<arch\>/dist)
 
 ## Basic Usage
 
@@ -85,10 +85,15 @@ The complete UNC syntax is as follows:
     - The `sshfs.kr` prefix maps to `HOST:/PATH` and uses the ssh key in `%USERPROFILE%/.ssh/id_rsa`. To specify a different specific key, define an alias of the HOST with the specific private ssh key you want to use in the ssh config. BEWARE: only keys without a pass phrase are supported.
 - `LOCUSER` is the local Windows user (optional; `USERNAME` or `DOMAIN+USERNAME` format).
     - Please note that this functionality is rarely necessary with latest versions of WinFsp.
+    
+
+NOTE: use only backslashes (\\) otherwhise you will get issue while unmap!
+
 
 ## GUI front ends
 
 There are currently 2 GUI front ends for SSHFS-Win: [SiriKali](https://mhogomchungu.github.io/sirikali/) and [SSHFS-Win-Manager](https://github.com/evsar3/sshfs-win-manager).
+
 BUT they are NOT guarantee to work with this version of SSHFS-Win.
 
 ### SiriKali
@@ -141,7 +146,7 @@ sshfs-win itself does not currently support ssh tunneling, but something similar
 
 It is possible to use the `sshfs-win.exe` and `sshfs.exe` programs directly for advanced usage scenarios. Both programs can be found in the `bin` subdirectory of the `SSHFS-Win` installation (usually `\Program Files\SSHFS-Win\bin`).
 
-The `sshfs-win.exe` program is useful to launch `sshfs.exe` from a `cmd.exe` prompt (`sshfs-win cmd`) or to launch `sshfs.exe` under the control of the [WinFsp Launcher](https://github.com/billziss-gh/winfsp/wiki/WinFsp-Service-Architecture) (`sshfs-win svc`). The `sshfs-win.exe` program **SHOULD NOT** be used from MSYS. The `sshfs-win.exe` program has the following usage:
+The `sshfs-win.exe` program is useful to launch `sshfs.exe` from a `cmd.exe` prompt (`sshfs-win cmd`) or to launch `sshfs.exe` under the control of the [WinFsp Launcher](https://github.com/billziss-gh/winfsp/wiki/WinFsp-Service-Architecture) (`sshfs-win svc`). The `sshfs-win.exe` program **SHOULD NOT** be used from MSYS2. The `sshfs-win.exe` program has the following usage:
 
 ```
 usage: sshfs-win cmd SSHFS_COMMAND_LINE
@@ -187,7 +192,18 @@ Map network drive or "net use": Use the provided "GroupReadWrite.reg" registry p
 
 ## Default options to sshfs through registry for mapped network drives
 
--o ServerAliveInterval=30 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o idmap=user -o max_readahead=1GB -o large_read -o kernel_cache -o follow_symlinks -o create_dir_umask=007 -o create_file_umask=117 -o reconnect" 
+-o ServerAliveInterval=30<br />
+-o StrictHostKeyChecking=no<br />
+-o UserKnownHostsFile=/dev/null<br />
+-o idmap=user<br />
+-o max_readahead=1GB<br />
+-o large_read<br />
+-o kernel_cache<br />
+-o follow_symlinks<br />
+-o create_dir_umask=007<br />
+-o create_file_umask=117<br />
+-o reconnect<br />
+-o max_conns=3  (only for .k or .kr)
 
 ## Project Organization
 
@@ -202,7 +218,7 @@ This is a simple project:
 
 ## Building
 
-In order to build SSHFS-Win you will need MSYS and the following MSYS packages:
+In order to build SSHFS-Win you will need MSYS2 and the following MSYS2 packages:
 
 - gcc
 - git
@@ -217,10 +233,10 @@ You will also need:
 
 To build:
 
-- Open a MSYS prompt.
+- Open a MSYS2 prompt.
 - Change directory to the sshfs-win repository.
 - Issue `make`.
-- The sshfs-win repository includes the upstream SSHFS project as a submodule; if you have not already done so, you must initialize it with `git submodule update --init sshfs cygfuse`.
+- The sshfs-win repository includes the upstream SSHFS project and cygfuse as a submodules; if you have not already done so, you must initialize them with `git submodule update --init sshfs cygfuse`.
 
 ## License
 
@@ -228,6 +244,6 @@ SSHFS-Win uses the same license as SSHFS, which is GPLv2+. It interfaces with Wi
 
 It also packages the following components:
 
-- MSYS: LGPLv3
-- GLib2: LGPLv2
+- MSYS2: GPL
+- GLib2: LGPLv2.1
 - SSH: "all components are under a BSD licence, or a licence more free than that"
