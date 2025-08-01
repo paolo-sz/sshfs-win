@@ -142,14 +142,14 @@ Section "MainSection" SEC01
 
   ; sshfs.k
   WriteRegStr HKLM "$LauncherRegistryKey\sshfs.k" "Executable" "$INSTDIR\bin\sshfs-win.exe"
-  WriteRegStr HKLM "$LauncherRegistryKey\sshfs.k" "CommandLine" "svc %1 %2 -user %U -home %P -o ServerAliveInterval=30 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o idmap=user -o max_readahead=1GB -o large_read -o kernel_cache -o follow_symlinks -o create_dir_umask=007 -o create_file_umask=117 -o reconnect"
+  WriteRegStr HKLM "$LauncherRegistryKey\sshfs.k" "CommandLine" "svc %1 %2 -user %U -home %P -o ServerAliveInterval=30 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o idmap=user -o max_readahead=1GB -o large_read -o kernel_cache -o follow_symlinks -o create_dir_umask=007 -o create_file_umask=117 -o reconnect -o max_conns=3"
   WriteRegStr HKLM "$LauncherRegistryKey\sshfs.k" "Security" "D:P(A;;RPWPLC;;;WD)"
   WriteRegDWORD HKLM "$LauncherRegistryKey\sshfs.k" "JobControl" 1
   WriteRegDWORD HKLM "$LauncherRegistryKey\sshfs.k" "Credentials" 0
 
   ; sshfs.kr
   WriteRegStr HKLM "$LauncherRegistryKey\sshfs.kr" "Executable" "$INSTDIR\bin\sshfs-win.exe"
-  WriteRegStr HKLM "$LauncherRegistryKey\sshfs.kr" "CommandLine" "svc %1 %2 -user %U -home %P -o ServerAliveInterval=30 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o idmap=user -o max_readahead=1GB -o large_read -o kernel_cache -o follow_symlinks -o create_dir_umask=007 -o create_file_umask=117 -o reconnect"
+  WriteRegStr HKLM "$LauncherRegistryKey\sshfs.kr" "CommandLine" "svc %1 %2 -user %U -home %P -o ServerAliveInterval=30 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o idmap=user -o max_readahead=1GB -o large_read -o kernel_cache -o follow_symlinks -o create_dir_umask=007 -o create_file_umask=117 -o reconnect -o max_conns=3"
   WriteRegStr HKLM "$LauncherRegistryKey\sshfs.kr" "Security" "D:P(A;;RPWPLC;;;WD)"
   WriteRegDWORD HKLM "$LauncherRegistryKey\sshfs.kr" "JobControl" 1
   WriteRegDWORD HKLM "$LauncherRegistryKey\sshfs.kr" "Credentials" 0
